@@ -1,0 +1,193 @@
+function App() {
+  return (
+    <>
+      <h1 class="text-3xl font-bold underline">Hello world!</h1>
+    </>
+  );
+}
+
+export default App;
+
+```
+├── client
+│   ├── public
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   ├── src
+│   │   ├── assets
+│   │   │   ├── hero.png
+│   │   │   ├── react.svg
+│   │   │   └── vite.svg
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   └── vite.config.js
+├── server
+│   ├── prisma
+│   │   └── schema.prisma
+│   ├── src
+│   │   ├── controllers
+│   │   ├── lib
+│   │   │   └── prisma.js
+│   │   ├── middleware
+│   │   ├── routes
+│   │   └── app.js
+│   ├── .gitignore
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── prisma.config.ts
+│   └── server.js
+
+{
+  "name": "client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwindcss": "^4.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "vite": "^8.0.12"
+  }
+}
+
+
+till now i have build this much frontend, for me now write the code for the 
+planzo 2.0 using your provided architecture, use react-router-dom also keep code 
+clean and simple, i  need the style like the prev nextjs planzo, for now you dont need to style the 
+ before login hero section just kep it plain i will later add and make style
+
+DATABASE : 
+
+ for the database side i will use neon db with prisma orm ok
+
+
+
+How does the backend know who the user is?
+
+Every request follows this sequence:
+
+1. User signs in using Clerk
+           │
+2. Clerk creates a session
+           │
+3. React calls getToken()
+           │
+4. React sends:
+
+Authorization: Bearer <token>
+
+           │
+5. Express receives request
+           │
+6. Clerk verifies token 
+           │
+7. req.auth.userId is available
+           │
+8. Query MongoDB using clerkId
+           │
+9. Continue with your business logic
+
+(import express from 'express'
+import { clerkMiddleware, clerkClient, requireAuth, getAuth } from '@clerk/express'
+
+const app = express()
+const PORT = 3000
+
+app.use(clerkMiddleware())
+
+// Use requireAuth() to protect this route
+// If user isn't authenticated, requireAuth() will redirect back to the homepage
+app.get('/protected', requireAuth(), async (req, res) => {
+  // Use `getAuth()` to get the user's `userId`
+  const { userId } = getAuth(req)
+
+  // Use the `getUser()` method to get the user's User object
+  const user = await clerkClient.users.getUser(userId)
+
+  return res.json({ user })
+})
+
+// Start the server and listen on the specified port
+app.listen(PORT, () => {
+  console.log(`Example app listening at http://localhost:${PORT}`)
+}))
+
+
+in backend side only write the schema 
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev" : "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@prisma/adapter-neon": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^7.8.0"
+  }
+}
+
+
+import dotenv from "dotenv";
+dotenv.config();
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaClient } from "@prisma/client";
+
+const connectionString = process.env.DATABASE_URL;
+const adapter = new PrismaNeon({ connectionString });
+
+const prisma = new Prismaclient(adapter);
+
+
+export default prisma;
