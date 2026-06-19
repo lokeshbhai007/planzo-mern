@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  clerkId   String   @unique
+  name      String
+  email     String   @unique
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  budgets   Budget[]
+  incomes   Income[]
+}
+
+model Budget {
+  id        Int       @id @default(autoincrement())
+  name      String
+  amount    Float
+  icon      String
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  expenses  Expense[]
+}
+
+model Expense {
+  id        Int      @id @default(autoincrement())
+  name      String
+  amount    Float
+  createdAt DateTime @default(now())
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  budgetId  Int
+}
+
+model Income {
+  id        Int      @id @default(autoincrement())
+  name      String
+  amount    Float
+  icon      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+}
