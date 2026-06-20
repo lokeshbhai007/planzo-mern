@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/react";
 import { LayoutGrid, PiggyBank, ReceiptText, CircleDollarSign } from "lucide-react";
 
 const menuList = [

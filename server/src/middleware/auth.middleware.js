@@ -1,23 +1,32 @@
-import { getAuth, clerkClient } from "@clerk/express";
+import { clerkClient, verifyToken } from "@clerk/express"; 
 import prisma from "../lib/prisma.js";
 
 const requireAuth = async (req, res, next) => {
   try {
-    const { userId: clerkId } = getAuth(req);
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+      clockSkewInMs: 60000, // ✅ allow 60 seconds clock difference
+    });
+
+    const clerkId = payload.sub;
 
     if (!clerkId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Find user in your DB
-    let user = await prisma.user.findUnique({
-      where: { clerkId },
-    });
+    // Find or create user in DB
+    let user = await prisma.user.findUnique({ where: { clerkId } });
 
-    // First time login — sync Clerk user into your DB
     if (!user) {
       const clerkUser = await clerkClient.users.getUser(clerkId);
-
       user = await prisma.user.create({
         data: {
           clerkId,
@@ -28,11 +37,11 @@ const requireAuth = async (req, res, next) => {
       });
     }
 
-    // Attach your DB user to the request
     req.user = user;
     next();
   } catch (error) {
-    next(error);
+    console.error("Auth error:", error.message);
+    return res.status(401).json({ error: "Unauthorized" });
   }
 };
 

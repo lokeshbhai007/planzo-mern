@@ -1,4 +1,4 @@
-import { SignInButton, SignUpButton, useAuth } from "@clerk/clerk-react";
+import { SignInButton, SignUpButton, useAuth } from "@clerk/react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
