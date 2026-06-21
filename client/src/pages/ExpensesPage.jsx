@@ -30,7 +30,16 @@ function ExpensesPage() {
     load();
   }, []);
 
-  
+  // DELETE expense
+  const handleDelete = async (id) => {
+    try {
+      const token = await getToken();
+      await apiFetch(`/expenses/${id}`, token, { method: "DELETE" });
+      dispatch(removeExpense(id));
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -67,6 +76,7 @@ function ExpensesPage() {
               <span>₹{e.amount}</span>
               <span>{new Date(e.createdAt).toLocaleDateString()}</span>
               <button
+                onClick={() => handleDelete(e.id)}
                 className="text-red-500 hover:text-red-700 text-left"
               >
                 Delete
