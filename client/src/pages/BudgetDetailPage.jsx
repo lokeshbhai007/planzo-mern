@@ -15,6 +15,10 @@ import {
 import apiFetch from "../utils/apiFetch.js";
 import { ArrowLeft, Trash } from "lucide-react";
 
+// ── Shared dark-mode input class ──────────────────────────────────────────
+const inputCls =
+  "border border-gray-200 dark:border-gray-600 rounded-xl p-3 w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors";
+
 function BudgetDetailPage() {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -22,7 +26,7 @@ function BudgetDetailPage() {
   const navigate = useNavigate();
 
   const budget = useSelector((s) =>
-    s.budget.budgets.find((b) => b.id === parseInt(id))
+    s.budget.budgets.find((b) => b.id === parseInt(id)),
   );
   const { expenses } = useSelector((s) => s.expense);
 
@@ -34,7 +38,6 @@ function BudgetDetailPage() {
   const [editAmount, setEditAmount] = useState("");
   const [editIcon, setEditIcon] = useState("");
 
-  // Load budget + expenses for this page
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -55,7 +58,6 @@ function BudgetDetailPage() {
     load();
   }, [id]);
 
-  // Pre-fill edit form when budget loads
   useEffect(() => {
     if (budget) {
       setEditName(budget.name);
@@ -64,7 +66,6 @@ function BudgetDetailPage() {
     }
   }, [budget]);
 
-  // ADD expense
   const handleAddExpense = async () => {
     if (!expName || !expAmount) return;
     try {
@@ -78,14 +79,13 @@ function BudgetDetailPage() {
         }),
       });
       dispatch(addExpense(data));
-      // Update budget totalSpend and totalItems in store
       if (budget) {
         dispatch(
           editBudget({
             ...budget,
             totalSpend: budget.totalSpend + parseFloat(expAmount),
             totalItems: budget.totalItems + 1,
-          })
+          }),
         );
       }
       setExpName("");
@@ -95,8 +95,7 @@ function BudgetDetailPage() {
     }
   };
 
-  // DELETE expense
-  const handleDeleteExpense = async (expId, expAmount) => {
+  const handleDeleteExpense = async (expId, amount) => {
     try {
       const token = await getToken();
       await apiFetch(`/expenses/${expId}`, token, { method: "DELETE" });
@@ -105,9 +104,9 @@ function BudgetDetailPage() {
         dispatch(
           editBudget({
             ...budget,
-            totalSpend: budget.totalSpend - parseFloat(expAmount),
+            totalSpend: budget.totalSpend - parseFloat(amount),
             totalItems: budget.totalItems - 1,
-          })
+          }),
         );
       }
     } catch (err) {
@@ -115,7 +114,6 @@ function BudgetDetailPage() {
     }
   };
 
-  // EDIT budget
   const handleEditBudget = async () => {
     try {
       const token = await getToken();
@@ -134,7 +132,6 @@ function BudgetDetailPage() {
     }
   };
 
-  // DELETE budget
   const handleDeleteBudget = async () => {
     try {
       const token = await getToken();
@@ -146,44 +143,33 @@ function BudgetDetailPage() {
     }
   };
 
-  if (loading || !budget) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 w-48 bg-gray-200 animate-pulse rounded-xl" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="h-44 bg-gray-200 animate-pulse rounded-2xl" />
-          <div className="h-44 bg-gray-200 animate-pulse rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
-
-  const perc = Math.min(
-    (budget.totalSpend / budget.amount) * 100, 100
-  ).toFixed(0);
+  const perc = Math.min((budget.totalSpend / budget.amount) * 100, 100).toFixed(
+    0,
+  );
 
   return (
-    <div className="space-y-6">
-
+    <div className="space-y-6 md:my-6 -my-12 ">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <ArrowLeft
+      {/* <div className="flex items-center gap-3"> */}
+      {/* <ArrowLeft
             onClick={() => navigate(-1)}
-            className="cursor-pointer text-gray-600 hover:text-blue-600"
-          />
-          <h2 className="text-2xl font-bold text-gray-800">My Expenses</h2>
-        </div>
+            className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            /> */}
+      <h2 className="text-3xl  font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">
+        My Expenses
+      </h2>
+      <div className="flex items-center justify-center md:justify-between flex-wrap gap-3">
+        {/* </div> */}
         <div className="flex gap-2">
           <button
             onClick={() => setShowEditForm(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 text-sm"
+            className="px-4 py-2 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white rounded-full text-sm transition-colors"
           >
             Edit Budget
           </button>
           <button
             onClick={handleDeleteBudget}
-            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 text-sm"
+            className="flex items-center cursor-pointer gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm transition-colors"
           >
             <Trash size={14} /> Delete
           </button>
@@ -191,27 +177,32 @@ function BudgetDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
         {/* Budget Card */}
-        <div className="p-5 border rounded-2xl bg-white">
+        <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 transition-colors duration-300">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <span className="text-2xl bg-gray-100 p-2 rounded-full">
+              <span className="text-2xl bg-gray-100 dark:bg-gray-700 p-2 rounded-full">
                 {budget.icon}
               </span>
               <div>
-                <p className="font-bold text-gray-800">{budget.name}</p>
-                <p className="text-xs text-gray-400">{budget.totalItems} items</p>
+                <p className="font-bold text-gray-800 dark:text-gray-100">
+                  {budget.name}
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  {budget.totalItems} items
+                </p>
               </div>
             </div>
-            <p className="font-bold text-blue-600">₹{budget.amount}</p>
+            <p className="font-bold text-blue-600 dark:text-blue-400">
+              ₹{budget.amount}
+            </p>
           </div>
           <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-400 mb-1">
+            <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mb-1">
               <span>₹{budget.totalSpend} spent</span>
               <span>₹{budget.amount - budget.totalSpend} left</span>
             </div>
-            <div className="w-full bg-gray-200 h-2 rounded-full">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full">
               <div
                 className="bg-blue-500 h-2 rounded-full"
                 style={{ width: `${perc}%` }}
@@ -221,25 +212,27 @@ function BudgetDetailPage() {
         </div>
 
         {/* Add Expense */}
-        <div className="p-5 border rounded-2xl bg-white space-y-3">
-          <h3 className="font-bold text-gray-800">Add Expense</h3>
+        <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 space-y-3 transition-colors duration-300">
+          <h3 className="font-bold text-gray-800 dark:text-gray-100 ">
+            Add Expense
+          </h3>
           <input
             placeholder="Expense name"
             value={expName}
             onChange={(e) => setExpName(e.target.value)}
-            className="border rounded-xl p-3 w-full"
+            className={inputCls}
           />
           <input
             type="number"
             placeholder="Amount"
             value={expAmount}
             onChange={(e) => setExpAmount(e.target.value)}
-            className="border rounded-xl p-3 w-full"
+            className={inputCls}
           />
           <button
             onClick={handleAddExpense}
             disabled={!expName || !expAmount}
-            className="w-full bg-blue-600 text-white rounded-full py-2 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 cursor-pointer text-white rounded-full py-2 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
           >
             Add Expense
           </button>
@@ -247,9 +240,11 @@ function BudgetDetailPage() {
       </div>
 
       {/* Expense Table */}
-      <div className="border rounded-2xl bg-white p-5">
-        <h3 className="font-bold text-gray-800 mb-4">Expenses</h3>
-        <div className="grid grid-cols-4 bg-gray-100 rounded-lg p-2 font-semibold text-sm text-gray-600">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 p-5 transition-colors duration-300">
+        <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-4">
+          Expenses
+        </h3>
+        <div className="grid grid-cols-4 bg-gray-100 dark:bg-gray-700 rounded-lg p-2 font-semibold text-sm text-gray-600 dark:text-gray-300">
           <span>Name</span>
           <span>Amount</span>
           <span>Date</span>
@@ -258,21 +253,21 @@ function BudgetDetailPage() {
         {expenses.map((e) => (
           <div
             key={e.id}
-            className="grid grid-cols-4 p-2 border-b text-sm text-gray-700 hover:bg-gray-50"
+            className="grid grid-cols-4 p-2 border-b border-gray-100 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
           >
             <span>{e.name}</span>
             <span>₹{e.amount}</span>
             <span>{new Date(e.createdAt).toLocaleDateString()}</span>
             <button
               onClick={() => handleDeleteExpense(e.id, e.amount)}
-              className="text-red-500 hover:text-red-700 text-left"
+              className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-left transition-colors"
             >
               Delete
             </button>
           </div>
         ))}
         {expenses.length === 0 && (
-          <p className="text-center py-6 text-gray-400 text-sm">
+          <p className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
             No expenses yet
           </p>
         )}
@@ -280,37 +275,39 @@ function BudgetDetailPage() {
 
       {/* Edit Budget Modal */}
       {showEditForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
-            <h3 className="font-bold text-lg">Edit Budget</h3>
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl transition-colors duration-300">
+            <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">
+              Edit Budget
+            </h3>
             <input
               value={editIcon}
               onChange={(e) => setEditIcon(e.target.value)}
-              className="border rounded-xl p-2 w-16 text-2xl text-center"
+              className="border border-gray-200 dark:border-gray-600 rounded-xl p-2 w-16 text-2xl text-center bg-white dark:bg-gray-700"
             />
             <input
               placeholder="Budget name"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="border rounded-xl p-3 w-full"
+              className={inputCls}
             />
             <input
               type="number"
               placeholder="Amount"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="border rounded-xl p-3 w-full"
+              className={inputCls}
             />
             <div className="flex gap-3">
               <button
                 onClick={() => setShowEditForm(false)}
-                className="flex-1 border rounded-full py-2 text-gray-600 hover:bg-gray-50"
+                className="flex-1 border cursor-pointer border-gray-200 dark:border-gray-600 rounded-full py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditBudget}
-                className="flex-1 bg-blue-600 text-white rounded-full py-2 hover:bg-blue-700"
+                className="flex-1 cursor-pointer bg-blue-600 text-white rounded-full py-2 hover:bg-blue-700 transition-colors"
               >
                 Update
               </button>
