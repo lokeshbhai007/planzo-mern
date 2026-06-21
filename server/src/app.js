@@ -9,6 +9,7 @@ import { clerkMiddleware } from "@clerk/express";
 import prisma from "./lib/prisma.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import incomeRoutes from "./routes/income.routes.js";
+import budgetRoutes from "./routes/budget.routes.js";
 
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(morgan("dev"));
 
 
 app.use("/api/incomes", incomeRoutes);
+app.use("/api/budgets", budgetRoutes);
 
 app.get("/", async (req, res) => {
   const users = await prisma.user.findMany();
