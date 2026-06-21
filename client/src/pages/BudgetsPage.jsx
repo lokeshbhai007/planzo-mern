@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@clerk/react";
 import {
-  setBudgets, addBudget, removeBudget, setLoading, setError,
+  setBudgets,
+  addBudget,
+  removeBudget,
+  setLoading,
+  setError,
 } from "../features/budget/budgetSlice.js";
 import apiFetch from "../utils/apiFetch.js";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +16,9 @@ function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl transition-colors duration-300">
-        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{title}</h3>
+        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">
+          {title}
+        </h3>
         {children}
       </div>
     </div>
@@ -20,25 +26,29 @@ function Modal({ title, onClose, children }) {
 }
 
 // ── Reusable dark-mode input ───────────────────────────────────────────────
-const inputCls = "border border-gray-200 dark:border-gray-600 rounded-xl p-3 w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors";
+const inputCls =
+  "border border-gray-200 dark:border-gray-600 rounded-xl p-3 w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors";
 
 function BudgetsPage() {
-  const dispatch  = useDispatch();
+  const dispatch = useDispatch();
   const { getToken } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { budgets, loading } = useSelector((s) => s.budget);
 
-  const [name, setName]         = useState("");
-  const [amount, setAmount]     = useState("");
-  const [icon, setIcon]         = useState("💰");
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [icon, setIcon] = useState("💰");
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
+    // Skip fetch if Redux already has data
+    if (budgets.length > 0) return;
+
     const load = async () => {
       dispatch(setLoading(true));
       try {
         const token = await getToken();
-        const data  = await apiFetch("/budgets", token);
+        const data = await apiFetch("/budgets", token);
         dispatch(setBudgets(data));
       } catch (err) {
         dispatch(setError(err.message));
@@ -53,12 +63,15 @@ function BudgetsPage() {
     if (!name || !amount) return;
     try {
       const token = await getToken();
-      const data  = await apiFetch("/budgets", token, {
+      const data = await apiFetch("/budgets", token, {
         method: "POST",
         body: JSON.stringify({ name, amount, icon }),
       });
       dispatch(addBudget({ ...data, totalSpend: 0, totalItems: 0 }));
-      setName(""); setAmount(""); setIcon("💰"); setShowForm(false);
+      setName("");
+      setAmount("");
+      setIcon("💰");
+      setShowForm(false);
     } catch (err) {
       dispatch(setError(err.message));
     }
@@ -77,7 +90,9 @@ function BudgetsPage() {
 
   return (
     <div className="space-y-6 md:my-6 -my-12">
-      <h2 className="text-3xl  font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">My Budgets</h2>
+      <h2 className="text-3xl  font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">
+        My Budgets
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* Create card */}
@@ -90,15 +105,23 @@ function BudgetsPage() {
                      transition-colors duration-200"
         >
           <span className="text-3xl text-gray-400 dark:text-gray-500">+</span>
-          <span className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Create New Budget</span>
+          <span className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+            Create New Budget
+          </span>
         </div>
 
         {loading
           ? [1, 2, 3].map((i) => (
-              <div key={i} className="h-44 rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
+              <div
+                key={i}
+                className="h-44 rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse"
+              />
             ))
           : budgets.map((b) => {
-              const perc = Math.min((b.totalSpend / b.amount) * 100, 100).toFixed(0);
+              const perc = Math.min(
+                (b.totalSpend / b.amount) * 100,
+                100,
+              ).toFixed(0);
               return (
                 <div
                   key={b.id}
@@ -114,11 +137,17 @@ function BudgetsPage() {
                         {b.icon}
                       </span>
                       <div>
-                        <p className="font-bold text-gray-800 dark:text-gray-100">{b.name}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">{b.totalItems} items</p>
+                        <p className="font-bold text-gray-800 dark:text-gray-100">
+                          {b.name}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          {b.totalItems} items
+                        </p>
                       </div>
                     </div>
-                    <p className="font-bold text-blue-600 dark:text-blue-400">₹{b.amount}</p>
+                    <p className="font-bold text-blue-600 dark:text-blue-400">
+                      ₹{b.amount}
+                    </p>
                   </div>
                   <div className="mt-4">
                     <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mb-1">
@@ -126,7 +155,10 @@ function BudgetsPage() {
                       <span>₹{b.amount - b.totalSpend} left</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${perc}%` }} />
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${perc}%` }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -141,8 +173,19 @@ function BudgetsPage() {
             onChange={(e) => setIcon(e.target.value)}
             className="border border-gray-200 dark:border-gray-600 rounded-xl p-2 w-16 text-2xl text-center bg-white dark:bg-gray-700"
           />
-          <input placeholder="Budget name" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
-          <input type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} />
+          <input
+            placeholder="Budget name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={inputCls}
+          />
+          <input
+            type="number"
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className={inputCls}
+          />
           <div className="flex gap-3">
             <button
               onClick={() => setShowForm(false)}

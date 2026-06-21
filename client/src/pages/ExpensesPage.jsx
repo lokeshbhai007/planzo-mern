@@ -1,20 +1,27 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@clerk/react";
-import { setExpenses, removeExpense, setLoading } from "../features/expense/expenseSlice.js";
+import {
+  setExpenses,
+  removeExpense,
+  setLoading,
+} from "../features/expense/expenseSlice.js";
 import apiFetch from "../utils/apiFetch.js";
 
 function ExpensesPage() {
-  const dispatch     = useDispatch();
+  const dispatch = useDispatch();
   const { getToken } = useAuth();
   const { expenses, loading } = useSelector((s) => s.expense);
 
   useEffect(() => {
+    // Skip fetch if Redux already has data
+    if (expenses.length > 0) return;
+
     const load = async () => {
       dispatch(setLoading(true));
       try {
         const token = await getToken();
-        const data  = await apiFetch("/expenses", token);
+        const data = await apiFetch("/expenses", token);
         dispatch(setExpenses(data));
       } catch (err) {
         console.error(err.message);
@@ -37,7 +44,9 @@ function ExpensesPage() {
 
   return (
     <div className="space-y-6 md:my-6 -my-12">
-      <h2 className="text-3xl  font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">My Expenses</h2>
+      <h2 className="text-3xl  font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">
+        My Expenses
+      </h2>
 
       <div className="border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 p-5 transition-colors duration-300">
         {/* Table Header */}
@@ -51,7 +60,10 @@ function ExpensesPage() {
         {loading ? (
           <div className="space-y-2 mt-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
+              <div
+                key={i}
+                className="h-10 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg"
+              />
             ))}
           </div>
         ) : expenses.length === 0 ? (
