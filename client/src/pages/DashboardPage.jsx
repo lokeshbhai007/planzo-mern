@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@clerk/react";
+import { useNavigate } from "react-router-dom";
 import {
   setBudgets,
   setLoading as setBudgetLoading,
@@ -23,9 +24,9 @@ import {
   ReceiptText,
   Wallet,
   CircleDollarSign,
+  TrendingUp,
 } from "lucide-react";
 
-// Shared dark-mode Recharts tooltip
 function DarkTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
@@ -38,6 +39,9 @@ function DarkTooltip({ active, payload, label }) {
           {entry.name}: ₹{entry.value}
         </p>
       ))}
+      <p className="text-xs text-red-500 dark:text-red-400 mt-2 pt-1 border-t border-gray-100 dark:border-gray-700">
+        Click to add expenses →
+      </p>
     </div>
   );
 }
@@ -45,6 +49,7 @@ function DarkTooltip({ active, payload, label }) {
 function DashboardPage() {
   const dispatch = useDispatch();
   const { getToken } = useAuth();
+  const navigate = useNavigate();
 
   const { budgets, loading } = useSelector((s) => s.budget);
   const { incomes } = useSelector((s) => s.income);
@@ -76,11 +81,23 @@ function DashboardPage() {
   const totalSpend = budgets.reduce((s, b) => s + b.totalSpend, 0);
   const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
 
+  const savingsRate =
+    totalIncome > 0
+      ? (((totalIncome - totalSpend) / totalIncome) * 100).toFixed(0)
+      : 0;
+
   const chartData = budgets.map((b) => ({
     name: b.name,
+    budgetId: b.id,
     Spent: b.totalSpend,
     Remaining: Math.max(0, b.amount - b.totalSpend),
   }));
+
+  const handleBarClick = (data) => {
+    if (data?.budgetId) {
+      navigate(`/dashboard/budgets/${data.budgetId}`);
+    }
+  };
 
   const statCards = [
     {
@@ -96,8 +113,8 @@ function DashboardPage() {
       color: "text-red-500  dark:text-red-400",
     },
     {
-      label: "No. of Budgets",
-      value: budgets.length,
+      label: "Remaining Amount",
+      value: `₹${totalIncome - totalSpend}`,
       icon: Wallet,
       color: "text-purple-600 dark:text-purple-400",
     },
@@ -111,9 +128,20 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6 md:my-6 -my-12">
-      <h2 className="text-3xl  font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">
-        Dashboard
-      </h2>
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">
+          Dashboard
+        </h2>
+        {totalIncome > 0 && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <TrendingUp size={14} className="text-green-600 dark:text-green-400" />
+            <span className="text-xs font-medium text-green-700 dark:text-green-400">
+              {savingsRate}% savings rate
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* AI Advice Card */}
       <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 flex items-start gap-3 transition-colors duration-300">
@@ -148,9 +176,12 @@ function DashboardPage() {
 
       {/* Bar Chart */}
       <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 transition-colors duration-300">
-        <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-4">
+        <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">
           Budget Activity
         </h3>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+          Click a bar to view budget · Spent vs remaining across all budgets
+        </p>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={chartData}>
             <XAxis
@@ -164,8 +195,20 @@ function DashboardPage() {
             />
             <Tooltip content={<DarkTooltip />} />
             <Legend wrapperStyle={{ color: "currentColor" }} />
-            <Bar dataKey="Spent" stackId="a" fill="#3b82f6" />
-            <Bar dataKey="Remaining" stackId="a" fill="#93c5fd" />
+            <Bar
+              dataKey="Spent"
+              stackId="a"
+              fill="#3b82f6"
+              onClick={handleBarClick}
+              style={{ cursor: "pointer" }}
+            />
+            <Bar
+              dataKey="Remaining"
+              stackId="a"
+              fill="#93c5fd"
+              onClick={handleBarClick}
+              style={{ cursor: "pointer" }}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -204,9 +247,10 @@ function DashboardPage() {
         </h3>
         <div className="space-y-3">
           {budgets.slice(0, 4).map((b) => {
-            const perc = Math.min((b.totalSpend / b.amount) * 100, 100).toFixed(
-              0,
-            );
+            const perc = Math.min(
+              (b.totalSpend / b.amount) * 100,
+              100,
+            ).toFixed(0);
             return (
               <div key={b.id} className="flex items-center gap-4">
                 <span className="text-xl bg-gray-100 dark:bg-gray-700 p-2 rounded-full">
