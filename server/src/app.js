@@ -11,6 +11,7 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import incomeRoutes from "./routes/income.routes.js";
 import budgetRoutes from "./routes/budget.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(morgan("dev"));
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/budgets", budgetRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.get("/", async (req, res) => {
   const users = await prisma.user.findMany();

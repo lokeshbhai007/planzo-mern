@@ -138,7 +138,7 @@ function IncomePage() {
                   </p>
                   <button
                     onClick={() => handleDelete(inc.id)}
-                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
                     aria-label="Delete"
                   >
                     🗑️
@@ -211,14 +211,14 @@ function IncomePage() {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={resetForm}
-                className="flex-1 border border-gray-200 dark:border-gray-600 rounded-full py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 cursor-pointer border border-gray-200 dark:border-gray-600 rounded-full py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!name || !amount}
-                className="flex-1 bg-blue-600 text-white rounded-full py-2 text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 cursor-pointer bg-blue-600 text-white rounded-full py-2 text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
               >
                 Add
               </button>

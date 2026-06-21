@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+//v2
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@clerk/react";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +56,15 @@ function DashboardPage() {
   const { incomes } = useSelector((s) => s.income);
   const { expenses } = useSelector((s) => s.expense);
 
+  const [advice, setAdvice] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const lastAdviceValues = useRef({
+    budget: 0,
+    income: 0,
+    spend: 0,
+  });
+
   useEffect(() => {
     const load = async () => {
       dispatch(setBudgetLoading(true));
@@ -92,6 +102,51 @@ function DashboardPage() {
     Spent: b.totalSpend,
     Remaining: Math.max(0, b.amount - b.totalSpend),
   }));
+
+  // Fetch AI advice only when totals change meaningfully
+  useEffect(() => {
+    if (totalBudget === 0 && totalIncome === 0) return;
+
+    const last = lastAdviceValues.current;
+
+    const hasChanged =
+      last.budget !== totalBudget ||
+      last.income !== totalIncome ||
+      last.spend !== totalSpend;
+
+    if (!hasChanged) return;
+
+    const loadAdvice = async () => {
+      setAiLoading(true);
+
+      try {
+        const token = await getToken();
+
+        const data = await apiFetch("/ai/advice", token, {
+          method: "POST",
+          body: JSON.stringify({
+            totalBudget,
+            totalIncome,
+            totalSpend,
+          }),
+        });
+
+        setAdvice(data.advice);
+
+        lastAdviceValues.current = {
+          budget: totalBudget,
+          income: totalIncome,
+          spend: totalSpend,
+        };
+      } catch (err) {
+        console.error(err.message);
+      } finally {
+        setAiLoading(false);
+      }
+    };
+
+    loadAdvice();
+  }, [totalBudget, totalIncome, totalSpend]);
 
   const handleBarClick = (data) => {
     if (data?.budgetId) {
@@ -135,7 +190,10 @@ function DashboardPage() {
         </h2>
         {totalIncome > 0 && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-            <TrendingUp size={14} className="text-green-600 dark:text-green-400" />
+            <TrendingUp
+              size={14}
+              className="text-green-600 dark:text-green-400"
+            />
             <span className="text-xs font-medium text-green-700 dark:text-green-400">
               {savingsRate}% savings rate
             </span>
@@ -150,7 +208,9 @@ function DashboardPage() {
           size={20}
         />
         <p className="text-gray-600 dark:text-gray-300">
-          You're managing your expenses well. Keep it up!
+          {aiLoading
+            ? "Generating advice..."
+            : advice || "Loading financial advice..."}
         </p>
       </div>
 
@@ -247,10 +307,9 @@ function DashboardPage() {
         </h3>
         <div className="space-y-3">
           {budgets.slice(0, 4).map((b) => {
-            const perc = Math.min(
-              (b.totalSpend / b.amount) * 100,
-              100,
-            ).toFixed(0);
+            const perc = Math.min((b.totalSpend / b.amount) * 100, 100).toFixed(
+              0,
+            );
             return (
               <div key={b.id} className="flex items-center gap-4">
                 <span className="text-xl bg-gray-100 dark:bg-gray-700 p-2 rounded-full">
