@@ -184,12 +184,12 @@ function DashboardPage() {
   return (
     <div className="space-y-6 md:my-6 -my-12">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex flex-col md:flex-row items-center md:justify-between gap-2">
         <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 text-center md:text-left">
           Dashboard
         </h2>
         {totalIncome > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <TrendingUp
               size={14}
               className="text-green-600 dark:text-green-400"
