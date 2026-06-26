@@ -27,12 +27,9 @@ Most students have no idea where their money goes each month. Planzo solves this
 
 ## 🖼️ Screenshots
 
-> Add your screenshots below by replacing the placeholder paths
-
 <div align="center">
-  <img src="./screenshots/dashboard.png" alt="Dashboard" width="100%" style="border-radius: 10px; margin-bottom: 16px;" />
-  <img src="./screenshots/budgets.png" alt="Budgets Page" width="48%" style="border-radius: 10px;" />
-  <img src="./screenshots/expenses.png" alt="Expenses Page" width="48%" style="border-radius: 10px;" />
+  <img src="./client/src/assets/banner.png" width="900" alt="Banner">
+
 </div>
 
 ---
